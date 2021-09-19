@@ -17,7 +17,7 @@ type counters struct {
 
 type counters_key struct {
 	sync.Mutex 
-	content string 
+	contents string 
 	time time.Time
 }
 
@@ -26,8 +26,24 @@ var (
 
 	content = []string{"sports", "entertainment", "business", "education"}
 	
-	counter_store = map[counters_key]*counters
+	//Store to keep counter after regular interval, this can be accessed by content type and time 
+	counter_store map[counters_key]*counters
+	
+	last_refresh_time = time.Now().Unix()
+	time_window = 10
+	rate_limit = 100
 )
+
+//Create counterMap to store view and clicks corresponding to each content type
+func createCounterMaps() {
+	// Data struncture to support event tracking (views and clicks) by content selection
+	counter_map = map[string]counters{
+		"sports":        counters{},
+		"entertainment": counters{},
+		"business":      counters{},
+		"education":     counters{},
+	}
+}
 
 func welcomeHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprint(w, "Welcome to EQ Works 😎")
@@ -35,6 +51,7 @@ func welcomeHandler(w http.ResponseWriter, r *http.Request) {
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	data := content[rand.Intn(len(content))]
+	c = &contentMap[data]
 
 	c.Lock()
 	c.view++
@@ -74,14 +91,36 @@ func statsHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func isAllowed() bool {
-	return true
+	// apply rate limit on basis of time_window
+	if refresh_time < (time.Now().Unix() - time_window) {
+		refresh_time = time.Now().Unix()
+		statusRequests = 1
+		return true
+	}
+	//apply rate limit on basis of number of requests
+	if statusRequests < rate_limit {
+		statusRequests++
+		return true
+	}
+	return false
 }
 
 func uploadCounters() error {
+	for true {
+		time.Sleep(5000 * time.Millisecond)
+		var i = 0
+		for i < 4 {
+			key := counters_key{contents: content[i], time: time.Now()}
+			counterStore[key] = counter_map[content[i]]
+			i++
+		}
+		createCounterMaps()
+	}
 	return nil
 }
 
 func main() {
+	go uploadCounters()
 	http.HandleFunc("/", welcomeHandler)
 	http.HandleFunc("/view/", viewHandler)
 	http.HandleFunc("/stats/", statsHandler)
