@@ -15,10 +15,18 @@ type counters struct {
 	click int
 }
 
+type counters_key struct {
+	sync.Mutex 
+	content string 
+	time time.Time
+}
+
 var (
 	c = counters{}
 
 	content = []string{"sports", "entertainment", "business", "education"}
+	
+	counter_store = map[counters_key]*counters
 )
 
 func welcomeHandler(w http.ResponseWriter, r *http.Request) {
