@@ -51,7 +51,7 @@ func welcomeHandler(w http.ResponseWriter, r *http.Request) {
 
 func viewHandler(w http.ResponseWriter, r *http.Request) {
 	data := content[rand.Intn(len(content))]
-	c = &contentMap[data]
+	c = &counter_map[data]
 
 	c.Lock()
 	c.view++
@@ -94,12 +94,12 @@ func isAllowed() bool {
 	// apply rate limit on basis of time_window
 	if refresh_time < (time.Now().Unix() - time_window) {
 		refresh_time = time.Now().Unix()
-		statusRequests = 1
+		num_requests = 1
 		return true
 	}
 	//apply rate limit on basis of number of requests
-	if statusRequests < rate_limit {
-		statusRequests++
+	if num_requests < rate_limit {
+		num_requests++
 		return true
 	}
 	return false
@@ -111,7 +111,7 @@ func uploadCounters() error {
 		var i = 0
 		for i < 4 {
 			key := counters_key{contents: content[i], time: time.Now()}
-			counterStore[key] = counter_map[content[i]]
+			counter_store[key] = counter_map[content[i]]
 			i++
 		}
 		createCounterMaps()
