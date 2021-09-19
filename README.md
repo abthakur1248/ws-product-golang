@@ -4,8 +4,6 @@
 
 ## Problems
 
-You should receive problems that can be solved using this repo as a starting point when you [apply for the job](https://apply.workable.com/eqworks/).
+I have received problems that can be solved using this repo as a starting point when I [applied for the job](https://apply.workable.com/eqworks/).
 
-## Notes on working through the problems
 
-Try to leverage Golang's `channels` and/or `sync`.
